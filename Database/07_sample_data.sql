@@ -101,8 +101,10 @@ FROM (VALUES
     ('daniel.cruz@example.test', 'XGBoost', 'Intermediate', 3),
     ('lina.chen@example.test', 'Large Language Models', 'Expert', 6),
     ('lina.chen@example.test', 'Retrieval Augmented Generation', 'Expert', 3),
+    ('lina.chen@example.test', 'Scikit-learn', 'Expert', 4),
     ('omar.haddad@example.test', 'Docker', 'Expert', 7),
     ('omar.haddad@example.test', 'MLflow', 'Intermediate', 4),
+    ('omar.haddad@example.test', 'Python', 'Intermediate', 3),
     ('priya.nair@example.test', 'PyTorch', 'Expert', 6),
     ('priya.nair@example.test', 'TensorFlow', 'Intermediate', 4),
     ('noah.martin@example.test', 'ETL Pipelines', 'Expert', 3),
@@ -166,16 +168,16 @@ GO
 INSERT INTO dbo.ProjectRequirements (ProjectID, SkillID, RequiredLevel)
 SELECT p.ProjectID, s.SkillID, v.RequiredLevel
 FROM (VALUES
-    ('Forecast regional product demand', 'XGBoost', 'Intermediate'),
-    ('Classify product catalog images', 'Computer Vision', 'Expert'),
+    ('Forecast regional product demand', 'Python', 'Intermediate'),
+    ('Classify product catalog images', 'OpenCV', 'Expert'),
     ('Analyze patient feedback themes', 'Natural Language Processing', 'Intermediate'),
-    ('Predict delivery delays', 'Python', 'Intermediate'),
+    ('Predict delivery delays', 'SQL', 'Intermediate'),
     ('Detect unusual account activity', 'Scikit-learn', 'Expert'),
     ('Build course recommendation model', 'Python', 'Intermediate'),
-    ('Inspect equipment images', 'OpenCV', 'Expert'),
-    ('Create a travel support assistant', 'Retrieval Augmented Generation', 'Expert'),
-    ('Summarize public service requests', 'spaCy', 'Intermediate'),
-    ('Tag media library content', 'Large Language Models', 'Intermediate')
+    ('Inspect equipment images', 'PyTorch', 'Expert'),
+    ('Create a travel support assistant', 'ETL Pipelines', 'Intermediate'),
+    ('Summarize public service requests', 'Python', 'Intermediate'),
+    ('Tag media library content', 'Workflow Automation', 'Expert')
 ) AS v(ProjectTitle, SkillName, RequiredLevel)
 INNER JOIN dbo.Projects AS p ON p.Title = v.ProjectTitle
 INNER JOIN dbo.AISkills AS s ON s.SkillName = v.SkillName
@@ -359,7 +361,7 @@ WHERE NOT EXISTS
 GO
 
 -- Record counts make it easy to confirm that the repeatable sample load ran.
-SELECT N'Freelancers' AS TableName, COUNT_BIG(*) AS RowCount FROM dbo.Freelancers
+SELECT N'Freelancers' AS TableName, COUNT_BIG(*) AS [RowCount] FROM dbo.Freelancers
 UNION ALL SELECT N'SkillCategories', COUNT_BIG(*) FROM dbo.SkillCategories
 UNION ALL SELECT N'AISkills', COUNT_BIG(*) FROM dbo.AISkills
 UNION ALL SELECT N'FreelancerSkills', COUNT_BIG(*) FROM dbo.FreelancerSkills
