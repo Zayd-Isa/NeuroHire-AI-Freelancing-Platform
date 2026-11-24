@@ -157,14 +157,30 @@ This dictionary describes the existing SQL Server tables. `PK` is a primary key,
 | ClientID | INT | Required, FK → Clients | Payer. |
 | FreelancerID | INT | Required, FK → Freelancers | Payee. |
 | GrossAmount | DECIMAL(10,2) | Required, CK > 0 | Total client payment. |
+| PlatformFeeRate | DECIMAL(5,4) | Required, DF 0.1000, CK 0–0.9999 | Commission-rate snapshot for this payment; the default is only a coursework demo assumption. |
 | PlatformFee | DECIMAL(10,2) | Required, DF 0.00, CK >= 0 | Platform fee amount. |
 | NetAmount | DECIMAL(10,2) | Required, CK > 0 | Freelancer amount after fee. |
-| PaymentMethod | VARCHAR(50) | Required | Payment method label. |
-| PaymentStatus | VARCHAR(20) | Required, DF `Held in Escrow`, CK | `Pending`, `Held in Escrow`, `Released`, or `Refunded`. |
-| TransactionRef | VARCHAR(100) | Required, UQ | Unique external or demonstration transaction reference. |
+| PaymentMethod | VARCHAR(50) | Required | Safe payment-method label only; never a card number or credential. |
+| PaymentProvider | VARCHAR(50) | Nullable | Provider name or integration label; no real gateway is configured. |
+| PaymentStatus | VARCHAR(20) | Required, DF `Pending`, CK | `Pending`, `Held in Escrow`, `Released`, `Refunded`, `Failed`, `Cancelled`, or `Disputed`. |
+| TransactionRef | VARCHAR(100) | Required, UQ | Unique provider/demo reference; must not contain a card number or secret. |
+| IdempotencyKey | UNIQUEIDENTIFIER | Required, UQ, DF `NEWID()` | Prevents a retried payment request from creating a duplicate row. |
 | PaymentDate | DATETIME | Required, DF `GETDATE()` | Payment record timestamp. |
 | ReleasedDate | DATETIME | Nullable | Time funds were released. |
 | NetAmount + PlatformFee | — | CK = GrossAmount | Ensures recorded amounts balance. |
+
+## PaymentStatusHistory
+
+| Field | SQL type | Key / constraint | Meaning |
+| --- | --- | --- | --- |
+| PaymentStatusEventID | BIGINT IDENTITY | PK | Status event identifier. |
+| PaymentID | INT | Required, FK → Payments.PaymentID | Payment whose status changed. |
+| PreviousStatus | VARCHAR(20) | Nullable | Status before the transition; `NULL` for the initial payment request. |
+| NewStatus | VARCHAR(20) | Required | Resulting payment status. |
+| ActorType | VARCHAR(20) | Required, CK | `System`, `Client`, `Freelancer`, or `Admin`. |
+| ActorID | INT | Nullable | Account ID supplied by the trusted application; polymorphic by actor type. |
+| Reason | VARCHAR(500) | Nullable | Audit explanation for the event. |
+| OccurredAt | DATETIME2(3) | Required, DF `SYSUTCDATETIME()` | UTC time recorded for the status event. |
 
 ## Reviews
 
@@ -176,7 +192,7 @@ This dictionary describes the existing SQL Server tables. `PK` is a primary key,
 | ReviewerID | INT | Required | Reviewer account ID; trigger checks against assignment. |
 | RevieweeID | INT | Required | Reviewed account ID; trigger checks against assignment. |
 | Rating | INT | Required, CK 1–5 | Review score. |
-| Comment | VARCHAR(MAX) | Nullable | Written review. |
+| Comment | NVARCHAR(MAX) | Nullable | Unicode written review; widened by script 09. |
 | CreatedAt | DATETIME | Required, DF `GETDATE()` | Review creation timestamp. |
 | (AssignmentID, ReviewerType) | — | UQ | At most one review per direction on an assignment. |
 
@@ -209,4 +225,4 @@ This dictionary describes the existing SQL Server tables. `PK` is a primary key,
 
 ## Supporting indexes
 
-The schema adds nonclustered indexes on `Projects(ClientID)`, `Projects(ProjectStatus)`, `Proposals(ProjectID)`, `FreelancerSkills(SkillID)`, and `Payments(AssignmentID)` to support common joins and filters.
+The schema adds nonclustered indexes on `Projects(ClientID)`, `Projects(ProjectStatus)`, `Proposals(ProjectID)`, `FreelancerSkills(SkillID)`, `Payments(AssignmentID)`, and `PaymentStatusHistory(PaymentID, OccurredAt DESC)` to support common joins, filters, and newest-first payment audit history.

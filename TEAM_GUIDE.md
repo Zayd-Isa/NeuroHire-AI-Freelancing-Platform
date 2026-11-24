@@ -35,6 +35,8 @@ This guide records the six-member responsibility plan and shared workflow for th
 - Build payment history/status and client/freelancer review/rating features.
 - Connect the module to the shared schema and payment rules; provide related SQL, sample data, screenshots, and workflow evidence.
 - A demo database record is not a real payment integration. A real payment gateway requires separate provider credentials and implementation.
+- Use `Database/08_payment_review_module.sql` after sample data for the current status-history, fee-snapshot, and payment/review reporting objects; run its rollback-only smoke test before capturing evidence.
+- Never put card numbers/CVV or database credentials in HTML, SQL sample data, screenshots, or Git.
 
 ### Member 5 — administration, reports, and final QA
 
@@ -54,7 +56,7 @@ All six members should:
 
 ## Shared UI foundation
 
-The UI is deliberately a minimal route scaffold rather than a finished application. `Application/index.html` only points to distinct freelancer, client, proposals, payments/reviews, and admin paths. Freelancer, client, and admin each have a separate reserved `login/` path. These login paths are placeholders: they have no forms or authentication. The payment/review page contains no payment form, transaction behavior, gateway, or review workflow.
+Other members' areas remain minimal route scaffolds. Member 4 has a working local UI/API in `Application/payments/` and `Backend/`. Run it with `npm start`; a static HTML server cannot serve its API. Follow [Payment preview setup](./Documentation/PaymentPreview.md). No real payment gateway is included.
 
 Use `Shared/styles.css` as the intentionally small base stylesheet. It defines the navy, warm-white, butter-gold, and cyan logo colors plus basic page and link styles. Members can design their assigned module pages independently. The route map and contribution boundaries are in `Documentation/UIFoundation.md`.
 
@@ -89,4 +91,4 @@ This project uses Microsoft SQL Server T-SQL. Running the SQL Server engine on L
 
 ## Current repository boundary
 
-The SQL schema, programmable objects, synthetic data, design notes, shared CSS design system, and static HTML scaffolds are present. The module workflows, backend integration, genuine runtime screenshots, and presentation recording still need team implementation. Do not mark those checklist items complete based on the shared scaffold or database scripts alone.
+The SQL schema, programmable objects, synthetic data, design notes, shared CSS, and other members' static scaffolds are present. Member 4 also has a working local backend/interface and genuine runtime screenshots. Other module workflows, final team integration, and the presentation recording still need implementation.

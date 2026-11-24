@@ -10,7 +10,7 @@ The UI in this branch is a minimal starting point. It reserves separate URLs for
 | Client | `/Application/client/` | `/Application/client/login/` |
 | Admin | `/Application/admin/` | `/Application/admin/login/` |
 | Proposals and assignments | `/Application/proposals/` | Access rules not decided |
-| Payments and reviews | `/Application/payments/` | Access rules not decided |
+| Payments and reviews | `/Application/payments/client/`, `/Application/payments/freelancer/`, `/Application/payments/admin/` | `/Application/payments/login/` (working module sign-in) |
 
 The root `/Application/` page is only a link to these separate paths. It is not a shared dashboard. Proposal and payment/review pages are modules, not user identities; their eventual access should be authorized for the correct signed-in client, freelancer, or administrator.
 
@@ -21,7 +21,7 @@ The root `/Application/` page is only a link to these separate paths. It is not 
 - Separate static HTML route placeholders for the areas listed above.
 - Separate freelancer, client, and admin sign-in URLs which currently only say “Coming soon.”
 
-There are no login forms, authentication, account permissions, dashboards, application workflows, backend endpoints, database connections, or payment processing in these pages. The placeholders reserve paths only; they do not prove separate domain names have been configured. A future deployment can map separate hostnames to these routes if the team decides to use subdomains.
+Other members' pages remain placeholders. Member 4 implements login, role permissions, SQL-connected payment/review workflows, and a Node.js backend in its own directories. See [Payment preview setup](./PaymentPreview.md). It records a demonstration ledger without processing real money. Separate paths do not imply separate domains; deployment can map hostnames later if the team chooses.
 
 ## Contribution boundaries
 
