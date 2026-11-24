@@ -1,110 +1,173 @@
-# NeuroHire AI — NeuroLance Hub Database
+# NeuroHire AI — NeuroLance Hub
 
-AI Projects and Services Freelancing Platform for the PUSL2019 Information Management and Retrieval coursework.
+**AI Projects & Services Freelancing Platform** for the PUSL2019 Information Management and Retrieval coursework.
+
+One database · one design system · six feature branches · one integrated platform.
 
 ## Project purpose
 
-NeuroHire AI (using the database name `NeuroLanceHubDB`) models a platform where clients post AI projects, freelancers list AI skills and services, freelancers submit proposals, clients select a freelancer, and the platform records assignments, milestones, payments, reviews, and disputes.
+NeuroHire AI (database name `NeuroLanceHubDB`) models a platform where clients post AI projects, freelancers list AI skills and services, freelancers submit proposals, clients select a freelancer, and the platform records assignments, milestones, payments, reviews, and disputes.
 
-This repository delivers the SQL Server database foundation, reusable objects, synthetic sample data, design notes, and a shared HTML/CSS foundation. Member 4 includes a working local payment/review interface and Node.js backend connected to SQL Server. Other member pages remain starter scaffolds. The payment module records a demonstration ledger; it does not charge cards or transfer money.
+The repository contains the complete Microsoft SQL Server database (schema, keys, constraints, triggers, functions, views, stored procedures, and synthetic sample data), the shared UI design system, and the fully working **Payments & Reviews portal** (Member 4): a secure Node.js/Express backend connected to SQL Server with client, freelancer, and admin workspaces. The other modules start from the shared scaffolds. The payment portal records a demonstration ledger; it does not charge cards or transfer real money.
 
-## Run the live payment preview
+## Team
 
-See [Payment preview setup](./Documentation/PaymentPreview.md) for the complete steps. Install Node.js 24, run `npm ci`, configure SQL Server, then run `npm start`. Open **http://127.0.0.1:3000/Application/payments/**.
+| Role                        | Module                                                |
+| --------------------------- | ----------------------------------------------------- |
+| Team Leader                 | Database core, UI standards, integration coordination |
+| Member 1                    | Freelancer module                                     |
+| Member 2                    | Client & project module                               |
+| Member 3                    | Proposal & assignment module                          |
+| **Member 4 — Sri Monishan** | **Payments & reviews module (complete)**              |
+| Member 5                    | Admin, reports & final QA                             |
 
-**Docker is optional.** Teammates can use SQL Server installed on Windows, a local SQL Server container, or the team's shared SQL Server. Docker was used for the Linux validation environment. The application only requires Node.js and a reachable SQL Server instance.
+## Tech stack
 
-The local setup generates private sign-in details in ignored `Backend/preview-accounts.txt`. See [screenshots and verification](./Documentation/PaymentPreview.md#verification-and-screenshots).
+| Layer           | Technology                                                            | Why it was chosen                                                                                                                |
+| --------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Database        | **Microsoft SQL Server 2016 SP1+ (tested on SQL Server 2022), T-SQL** | Enterprise relational engine: keys, constraints, triggers, UDFs, views, stored procedures, transactions, table-valued parameters |
+| Backend         | **Node.js 24 + Express 5**                                            | Modern, fast, async JavaScript server with a small dependency footprint                                                          |
+| Database driver | **`mssql` (Tedious)**                                                 | Pure-JavaScript SQL Server driver: no ODBC/native driver install on any OS                                                       |
+| Frontend        | **HTML5, CSS3, vanilla JavaScript**                                   | No build step; runs in any modern browser                                                                                        |
+| Shared design   | `Shared/styles.css`                                                   | One colour/typography system across all modules                                                                                  |
+| Security        | **scrypt password hashing, CSRF tokens, Helmet, express-rate-limit**  | See [Security](#security)                                                                                                        |
+| Testing         | **Node.js API tests, Playwright browser tests, SQL smoke test**       | Automated end-to-end verification against the real database                                                                      |
+| Version control | Git + GitHub feature-branch workflow                                  | One branch per member, merged into `main`                                                                                        |
+
+## Security
+
+The payment portal follows OWASP-recommended practice:
+
+- **Password hashing:** memory-hard **scrypt** (N=131072, r=8, p=1) with a random 16-byte salt per user and a 64-byte derived key. Passwords are never stored in plain text, and comparison is timing-safe.
+- **Sessions:** HttpOnly, `SameSite=Strict` cookies with a one-hour lifetime.
+- **CSRF protection:** every state-changing request needs a matching Origin header and CSRF token.
+- **Rate limiting:** 12 sign-in attempts per 15 minutes; 180 API requests per minute.
+- **HTTP hardening:** Helmet security headers and a 16 KB request-body limit.
+- **SQL injection protection:** every query is parameterized or a stored-procedure call.
+- **Authorization:** actor IDs come from the server session, never from the browser; every payment and review is ownership-checked by role.
+- **Least privilege:** the app connects with a dedicated SQL login that holds only the module role, never `db_owner`.
+- **Database-enforced rules:** fee-rate snapshots, idempotency keys that block duplicate payments, allowed status transitions only, and an append-only payment status history.
+- **No secrets in Git:** `.env` files and generated preview accounts are ignored. No card numbers, CVV, or real credentials exist anywhere in the project.
+
+## What you need to install
+
+Works on **Windows, Linux, and macOS**. Nothing in the repository is OS-specific.
+
+| Software                                          | Required? | Notes                                                                                         |
+| ------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------- |
+| [Git](https://git-scm.com/)                       | Yes       | To clone/pull the repository                                                                  |
+| [Node.js 24](https://nodejs.org/)                 | Yes       | `package.json` requires Node 24                                                               |
+| Microsoft SQL Server (Express or Developer, free) | Yes       | The database engine. A team/shared server or a Docker container also works                    |
+| SQL Server Management Studio (SSMS)               | Optional  | To browse the database and run queries. SSMS is a client only; it does not include the engine |
+| Docker                                            | Optional  | Only if you prefer running SQL Server in a container                                          |
+| Playwright Chromium                               | Optional  | Only to rerun browser tests: `npx playwright install chromium`                                |
+
+**Windows SQL Server one-time settings:** in _SQL Server Configuration Manager_, enable **TCP/IP** on port **1433** and restart the service. In SSMS, enable **SQL Server and Windows Authentication mode** (server properties → Security).
+
+## Run the payment portal
+
+Full guide: [Payment preview setup](./Documentation/PaymentPreview.md).
+
+```sh
+npm ci                 # install locked dependencies
+# create Backend/.env.setup with your local SQL admin login (see the guide)
+npm run db:prepare     # builds NeuroLanceHubDB (scripts 01–09) and a limited app login
+npm start              # starts the API and portal
+```
+
+Open **http://127.0.0.1:3000/Application/payments/** and sign in with an account from the generated, Git-ignored `Backend/preview-accounts.txt`.
+
+Verification:
+
+```sh
+npm run test:api       # 35 HTTP assertions plus commission, totals, audit, rating, ownership and least-privilege checks
+npm run test:ui        # browser workflow for all three roles, desktop and mobile
+```
+
+## Payments & reviews portal features
+
+- **Client workspace:** create payments for assigned projects with a live commission/net preview; view payment history; review the freelancer once the project is complete.
+- **Freelancer workspace:** view earnings, payment status and history; review the client.
+- **Admin workspace:** hold, release, or refund payments; view the full audited status history.
+- **Responsive UI** on desktop and mobile, using the shared NeuroHire design system.
+
+Screenshots from the running SQL-connected portal are in [`Documentation/Screenshots/member4`](./Documentation/Screenshots/member4).
 
 ## Team completion checklist
 
-This checklist follows the six-role responsibility plan. **[x] means the repository contains the named artifact or implementation; it does not prove which teammate authored it, that it runs successfully on the team's SQL Server instance, or that the work has been demonstrated.** The SQL foundation covers several modules. Member 4 now has a locally verified interface, API, and screenshot evidence; other module workflows and the final integrated presentation remain unfinished.
+[x] means the repository contains the working artifact.
 
 ### Team Leader — database, shared design, and integration
 
-- [x] GitHub repository and the existing database module structure are present.
-- [x] Existing table names and relationships are documented; keys and constraints are defined in the SQL scripts.
-- [x] SQL Server setup/run order and shared database-object integration are documented.
-- [x] Database design, assumptions, normalization rationale, and data dictionary are documented.
-- [x] Clean-install all database scripts on SQL Server 2022 running on Linux; the setup, schema, object, and sample-data scripts completed successfully.
-- [ ] Capture and add the required database screenshots from the team's coursework environment.
-- [x] Create a shared CSS design system and consistent landing/module starter scaffolds.
-- [x] Provide a common application folder structure and links between starter pages.
-- [ ] Complete the feature workflows and review/merge the team's individual branches.
-- [ ] Add the rendered database diagram and actual database screenshots to the coursework evidence.
-- [ ] Coordinate the final report, critical evaluation, and team presentation/recording.
+- [x] GitHub repository, `main` branch, and feature-branch naming created.
+- [x] Microsoft SQL Server database set up; all core tables created.
+- [x] Primary keys, foreign keys, relationships, and constraints finalized.
+- [x] Initial sample database structure and synthetic data prepared.
+- [x] Shared CSS style file with theme colours, fonts, buttons, spacing, and layout rules.
+- [x] Folder structure and integration method defined; database script and design system shared with all members.
+- [x] Database design, ER model, normalization rationale, and data dictionary documented.
+- [x] Clean install of all database scripts verified on SQL Server 2022.
+- [x] Member 4 payment & review module integrated into `main`.
+- [ ] Add database screenshots and a rendered ER diagram image to the coursework evidence.
+- [ ] Review and merge the remaining members' branches.
+- [ ] Coordinate final integration testing, report, and presentation.
 
 ### Member 1 — freelancer module
 
-- [x] Freelancer, skill, freelancer-skill, and service tables are in the schema; synthetic example records are provided.
-- [x] Freelancer search/reporting SQL foundation is present (`usp_FindFreelancersBySkill` and freelancer summary/rating objects).
-- [ ] Build freelancer registration, profile, skills/services, dashboard, and project-browsing features on top of the starter scaffold.
-- [ ] Connect and demonstrate the screens against the shared database; add module test cases and screenshots.
-- [ ] Write the freelancer-module evidence and present the freelancer features.
+- [x] Freelancer, skill, freelancer-skill, and service tables with synthetic records.
+- [x] Freelancer search/reporting SQL (`usp_FindFreelancersBySkill`, freelancer summary and rating objects).
+- [ ] Freelancer registration, profile, skills/services, dashboard, and project-browsing pages.
+- [ ] Connect screens to the database; add test cases, screenshots, and evidence.
+- [ ] Present the freelancer features.
 
 ### Member 2 — client and project module
 
-- [x] Client, project, and project-requirement tables are in the schema; synthetic example records are provided.
-- [x] `usp_CreateProject` supplies a transactional SQL foundation for creating a project and its required skills.
-- [ ] Build client/organization profiles and project create/edit/requirements features, including skills, budget, and deadline.
-- [ ] Connect and demonstrate the screens against the shared database; add module test cases and screenshots.
-- [ ] Write the client/project evidence and present project creation.
+- [x] Client, project, and project-requirement tables with synthetic records.
+- [x] `usp_CreateProject` transactional project creation with required skills.
+- [ ] Client/organization profiles and project create/edit/requirements pages.
+- [ ] Connect screens to the database; add test cases, screenshots, and evidence.
+- [ ] Present project creation.
 
 ### Member 3 — proposals and assignments module
 
-- [x] Proposal, assignment, and milestone tables are in the schema; synthetic workflow records are provided.
-- [x] Assignment-related triggers validate linked participants and synchronize project/proposal statuses and completion counts.
-- [ ] Build proposal submission, review/selection, and assignment workflows on top of the starter scaffold.
-- [ ] Connect and demonstrate the workflow against the shared database; add tests, screenshots, and evidence.
+- [x] Proposal, assignment, and milestone tables with synthetic workflow records.
+- [x] Assignment triggers validate participants and synchronize statuses and completion counts.
+- [ ] Proposal submission, review/selection, and assignment pages.
+- [ ] Connect the workflow to the database; add tests, screenshots, and evidence.
 - [ ] Present the proposal-to-assignment workflow.
 
-### Member 4 — payments and reviews module
+### Member 4 — payments and reviews module (Sri Monishan) ✅ complete
 
-- [x] Payment and review tables are in the schema; synthetic pending, escrow, released-payment, and review records are provided.
-- [x] Payment/review triggers maintain account totals and ratings; payment/review views and reporting objects are present.
-- [x] Fee-rate snapshots, duplicate-request idempotency, allowed status transitions, and append-only payment status history are implemented.
-- [x] Review creation is restricted to the assigned participants after assignment completion; detailed review and participant-summary views are provided.
-- [x] Build client/freelancer/admin payment workspaces, payment history, status actions, and review/rating forms connected to the shared schema.
-- [x] Connect the Node.js/Express API using parameterized SQL, authenticated sessions, ownership checks, CSRF protection, and a dedicated SQL role.
-- [x] Add API/browser verification, desktop/mobile screenshots, and module setup/report documentation.
-- [ ] Present the module and verify it in the final integrated team environment. No real payment gateway is implemented.
+- [x] Payment recording and payment status management (pending, held in escrow, released, refunded).
+- [x] Client ↔ freelancer review and rating features, restricted to assigned participants after completion.
+- [x] Payment history, review details, and result summaries for client, freelancer, and admin.
+- [x] Payment logic connected to the shared schema: fee-rate snapshots, idempotency, allowed status transitions, append-only status history.
+- [x] Module SQL objects: `08_payment_review_module.sql`, `09_payment_web_support.sql`, stored procedures, views, and a rollback-only smoke test.
+- [x] Secure Node.js/Express API: scrypt password hashing, sessions, CSRF, rate limiting, ownership checks, least-privilege SQL role.
+- [x] Automated API and browser tests passing; desktop/mobile screenshots; setup and module documentation.
+- [ ] Present the payment and review features in the final presentation.
 
 ### Member 5 — administration, reports, and final QA
 
-- [x] Admin and dispute tables are in the schema; synthetic example records are provided.
-- [x] Database reporting views/procedure and dispute validation logic are present.
-- [ ] Build admin features for users, categories, project monitoring, and platform overview.
-- [ ] Build and demonstrate project, freelancer, client, and payment reporting screens.
-- [ ] Perform integrated system testing and final bug fixing; add test results and screenshots.
-- [ ] Write the critical evaluation/improvements section and present the admin/reporting features.
+- [x] Admin and dispute tables with synthetic records.
+- [x] Reporting views/procedure and dispute validation logic.
+- [ ] Admin dashboard for users, categories, project monitoring, and platform overview.
+- [ ] Project, freelancer, client, and payment reporting screens.
+- [ ] Integrated system testing, final bug fixing, test results, and screenshots.
+- [ ] Critical evaluation/improvements section; present the admin/reporting features.
 
 ### Shared work — all six members
 
-- [x] A common database schema and shared SQL scripts are in the repository.
-- [x] A database design/data dictionary and SQL sample data are present.
-- [x] Use the shared CSS design system and page scaffolds as the starting point.
-- [ ] Keep module-specific behavior and styling within each member's owned files.
-- [ ] Each member pulls the latest integrated branch, works on the agreed feature branch, and contributes tested changes through review.
-- [ ] Capture genuine screenshots and workflow/test evidence from the running project.
-- [ ] Prepare and deliver the planned team presentation; each member should explain their own verified contribution.
-
-The checked items describe the **current repository contents**; they do not prove which teammate authored a feature or delivered its presentation. The shared UI remains a foundation for the other modules. Member 4 has its own local interface, backend, and evidence. Final team integration and presentation work remain.
+- [x] Common database schema and shared SQL scripts.
+- [x] Database design, data dictionary, and sample data.
+- [x] Shared CSS design system and page scaffolds.
+- [ ] Every member works on an individual branch and pushes tested code.
+- [ ] Every member adds screenshots and evidence for the report.
+- [ ] Prepare and deliver the 15-minute group presentation.
 
 ## Shared UI foundation
 
-`Shared/styles.css` is a small shared base for the platform palette, text, page width, and basic links. The visual direction uses navy, warm white, butter-gold, and a cyan neural logo inspired by the team reference. It deliberately avoids finished dashboard layouts and feature controls.
-
-`Application/index.html` is a simple portal selector. Freelancer, client, proposal, payment/review, and admin areas have separate paths. Shared sign-in paths at `/Application/freelancer/login/`, `/Application/client/login/`, and `/Application/admin/login/` remain placeholders. Member 4's working sign-in is `/Application/payments/login/`, with separate `/Application/payments/client/`, `/Application/payments/freelancer/`, and `/Application/payments/admin/` workspaces. See [UI route boundaries](./Documentation/UIFoundation.md).
-
-## Technology
-
-- **Database:** Microsoft SQL Server, using T-SQL. SQL Server can run on Linux; the scripts use SQL Server syntax such as `IDENTITY`, `GO`, `CREATE OR ALTER`, table-valued parameters, and `THROW`.
-- **Version control:** Git and GitHub.
-- **Frontend:** HTML, CSS, vanilla JavaScript; no frontend build step.
-- **Backend:** Node.js 24, Express 5, `mssql`/Tedious; Helmet and express-rate-limit for HTTP headers and request limits.
-- **Authentication:** Node.js `crypto.scrypt`, random salts, timing-safe password verification, HttpOnly/SameSite session cookies, CSRF tokens, and server-side role/ownership checks.
-- **Development:** SQL Server 2022 in Docker on Linux (optional); Playwright for browser verification and genuine screenshots.
-- **Compatibility:** SQL Server 2016 SP1 or later is required for `CREATE OR ALTER`. Use a SQL Server instance/container and a client that understands `GO`, such as `sqlcmd` or a SQL Server editor.
+`Shared/styles.css` defines the platform palette (navy, warm white, butter-gold, cyan neural logo), typography, page width, and links. `Application/index.html` is the portal selector with separate freelancer, client, proposal, payment/review, and admin paths. The payment portal uses `/Application/payments/login/` with `/client/`, `/freelancer/`, and `/admin/` workspaces. See [UI route boundaries](./Documentation/UIFoundation.md).
 
 ## Database architecture
 
@@ -170,25 +233,23 @@ ROLLBACK TRANSACTION;
 
 The last example assumes the sample-data script has run. The rollback restores the sample payment status and account total after displaying the trigger-updated value.
 
-## Set up and run on Linux
+## Set up the database manually (Windows or Linux)
 
-You need a SQL Server instance accessible from Linux (local, container, or remote) and a SQL Server client. The SQL scripts are not SQLite or MySQL scripts. Run them in the order below; `GO` is a SQL Server batch separator understood by `sqlcmd` and SQL Server editors.
+`npm run db:prepare` does all of this automatically. To do it by hand, use SSMS, Azure Data Studio, or `sqlcmd` (they understand the `GO` batch separator) and run in order:
 
-1. Run `Database/setup_database.sql` once. It creates `NeuroLanceHubDB` if it does not exist.
-2. Run `Database/01_freelancer_module.sql`.
-3. Run `Database/02_client_project_module.sql`.
-4. Run `Database/03_proposals_and_assignments.sql`.
-5. Run `Database/04_payments_and_reviews.sql`.
-6. Run `Database/05_admin_and_disputes.sql`.
-7. Run `Database/06_database_objects.sql` to create the type, functions, views, procedures, and triggers.
-8. Run `Database/07_sample_data.sql` to load synthetic examples.
-9. Run `Database/08_payment_review_module.sql` to add payment status audit, commission snapshots, payment history, and Member 4 procedures/views.
-10. Run `Database/09_payment_web_support.sql` for the backend read models, login lookup, and Unicode review text support.
-11. Run `Database/tests/08_payment_review_smoke_test.sql` to verify the Member 4 database flow. It rolls its demonstration changes back.
+1. `Database/setup_database.sql`: creates `NeuroLanceHubDB` if it does not exist.
+2. `Database/01_freelancer_module.sql`
+3. `Database/02_client_project_module.sql`
+4. `Database/03_proposals_and_assignments.sql`
+5. `Database/04_payments_and_reviews.sql`
+6. `Database/05_admin_and_disputes.sql`
+7. `Database/06_database_objects.sql`: type, functions, views, procedures, and triggers.
+8. `Database/07_sample_data.sql`: synthetic examples.
+9. `Database/08_payment_review_module.sql`: payment audit, commission snapshots, payment history, Member 4 procedures/views.
+10. `Database/09_payment_web_support.sql`: backend read models, login lookup, Unicode review text.
+11. `Database/tests/08_payment_review_smoke_test.sql`: verifies the payment flow and rolls its changes back.
 
-The table-creation scripts are for a clean database and are not idempotent. Do not run them a second time against a database whose tables already exist. The sample-data script can be rerun; it checks natural keys before adding its own records. It prints row counts at the end.
-
-The sample records use reserved `.test` email domains, demo transaction references, `Demo record only` payment methods, and non-authenticating password markers. They are not real users or payments and must not be used as production credentials. A production application must hash passwords with a suitable password-hashing library before storing them; SQL Server is not performing password hashing in these scripts.
+The table-creation scripts are for a clean database and are not idempotent. The sample-data script can be rerun; it checks natural keys first. Sample records use reserved `.test` email domains, demo transaction references, and non-authenticating password markers; they are not real users or payments. Real portal accounts are created by `npm run db:prepare` with scrypt-hashed passwords.
 
 ## Schema files
 
@@ -204,13 +265,11 @@ The sample records use reserved `.test` email domains, demo transaction referenc
 - `Documentation/DatabaseDesign.md` — ER model, relationships, assumptions, and normalization rationale.
 - `Documentation/DataDictionary.md` — column types, key/constraint notes, and field meanings.
 
-## Coursework evidence still needed
+## Coursework evidence
 
-The SQL portion now includes the required two-or-more triggers, user-defined functions, views, and stored procedures, plus synthetic sample data. The coursework report and presentation still need to be prepared by the team: include a rendered ER/database diagram, screenshots from a successfully built and populated SQL Server database, query and object demonstrations, critical evaluation, contribution evidence, and the presentation recording. Screenshots and recordings should be captured from the team’s actual running environment; they are not fabricated in this repository.
+The SQL portion includes the required triggers, user-defined functions, views, and stored procedures, plus synthetic sample data. Member 4's runtime screenshots and test evidence are included. The final report still needs the rendered ER diagram, database screenshots, the other modules' evidence, the critical evaluation, and the presentation recording. Follow the assessment brief's rules on permitted tools and referencing before submission.
 
-The assessment brief also asks the team to follow its permitted AI-use level and cite external or AI-generated code where required. Confirm those rules with the coursework instructions and teaching team before submission.
-
-## Member 4 — payments and reviews
+## Member 4 — payments and reviews (Sri Monishan)
 
 `Payments` remains linked to `ProjectAssignments` and optional `ProjectMilestones`; the client and freelancer IDs must match that assignment. Each payment keeps a `PlatformFeeRate` snapshot so later policy changes do not rewrite older records. `dbo.usp_RecordPayment` calculates the platform commission and freelancer net from the gross amount, rejects amounts above the agreed project/milestone value, starts each record as `Pending`, and accepts an idempotency key so a retry cannot create a duplicate. The 10% rate is only the coursework sample default, not a promised business rate.
 
