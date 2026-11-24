@@ -6,7 +6,7 @@ AI Projects and Services Freelancing Platform for the PUSL2019 Information Manag
 
 NeuroHire AI (using the database name `NeuroLanceHubDB`) models a platform where clients post AI projects, freelancers list AI skills and services, freelancers submit proposals, clients select a freelancer, and the platform records assignments, milestones, payments, reviews, and disputes.
 
-This repository currently delivers the SQL Server database foundation, reusable database objects, repeatable synthetic sample data, and database design notes. The HTML pages in `Application/` and `Shared/styles.css` are still starter files; this repository does not yet contain a working web application, backend, real payment gateway, screenshots, or presentation recording. Do not describe those items as implemented until they are added and demonstrated.
+This repository currently delivers the SQL Server database foundation, reusable database objects, repeatable synthetic sample data, database design notes, and a shared HTML/CSS visual foundation. The application pages are starter scaffolds only: they do not implement module workflows, a backend, or a real payment gateway. Coursework screenshots and the presentation recording also remain to be prepared.
 
 ## Team completion checklist
 
@@ -20,8 +20,9 @@ This checklist follows the six-role responsibility plan. **[x] means the reposit
 - [x] Database design, assumptions, normalization rationale, and data dictionary are documented.
 - [x] Clean-install all database scripts on SQL Server 2022 running on Linux; the setup, schema, object, and sample-data scripts completed successfully.
 - [ ] Capture and add the required database screenshots from the team's coursework environment.
-- [ ] Create the agreed shared CSS/design system; `Shared/styles.css` is empty.
-- [ ] Complete and verify the shared application folder/integration workflow and review/merge the team's feature branches.
+- [x] Create a shared CSS design system and consistent landing/module starter scaffolds.
+- [x] Provide a common application folder structure and links between starter pages.
+- [ ] Complete the feature workflows and review/merge the team's individual branches.
 - [ ] Add the rendered database diagram and actual database screenshots to the coursework evidence.
 - [ ] Coordinate the final report, critical evaluation, and team presentation/recording.
 
@@ -29,7 +30,7 @@ This checklist follows the six-role responsibility plan. **[x] means the reposit
 
 - [x] Freelancer, skill, freelancer-skill, and service tables are in the schema; synthetic example records are provided.
 - [x] Freelancer search/reporting SQL foundation is present (`usp_FindFreelancersBySkill` and freelancer summary/rating objects).
-- [ ] Build freelancer registration, profile, skills/services, dashboard, and project-browsing screens; the current HTML starters are empty.
+- [ ] Build freelancer registration, profile, skills/services, dashboard, and project-browsing features on top of the starter scaffold.
 - [ ] Connect and demonstrate the screens against the shared database; add module test cases and screenshots.
 - [ ] Write the freelancer-module evidence and present the freelancer features.
 
@@ -37,7 +38,7 @@ This checklist follows the six-role responsibility plan. **[x] means the reposit
 
 - [x] Client, project, and project-requirement tables are in the schema; synthetic example records are provided.
 - [x] `usp_CreateProject` supplies a transactional SQL foundation for creating a project and its required skills.
-- [ ] Build client/organization profiles and project create/edit/requirements screens, including skills, budget, and deadline.
+- [ ] Build client/organization profiles and project create/edit/requirements features, including skills, budget, and deadline.
 - [ ] Connect and demonstrate the screens against the shared database; add module test cases and screenshots.
 - [ ] Write the client/project evidence and present project creation.
 
@@ -45,7 +46,7 @@ This checklist follows the six-role responsibility plan. **[x] means the reposit
 
 - [x] Proposal, assignment, and milestone tables are in the schema; synthetic workflow records are provided.
 - [x] Assignment-related triggers validate linked participants and synchronize project/proposal statuses and completion counts.
-- [ ] Build proposal submission, review/selection, and assignment workflow screens.
+- [ ] Build proposal submission, review/selection, and assignment workflows on top of the starter scaffold.
 - [ ] Connect and demonstrate the workflow against the shared database; add tests, screenshots, and evidence.
 - [ ] Present the proposal-to-assignment workflow.
 
@@ -53,7 +54,7 @@ This checklist follows the six-role responsibility plan. **[x] means the reposit
 
 - [x] Payment and review tables are in the schema; synthetic pending, escrow, released-payment, and review records are provided.
 - [x] Payment/review triggers maintain account totals and ratings; payment/review views and reporting objects are present.
-- [ ] Build payment status/history and review/rating screens and integrate them with the shared schema.
+- [ ] Build payment status/history and review/rating features and integrate them with the shared schema.
 - [ ] Connect and demonstrate the module; add tests and screenshots. No payment gateway is implemented here.
 - [ ] Write the module evidence and present payment/review features.
 
@@ -61,7 +62,7 @@ This checklist follows the six-role responsibility plan. **[x] means the reposit
 
 - [x] Admin and dispute tables are in the schema; synthetic example records are provided.
 - [x] Database reporting views/procedure and dispute validation logic are present.
-- [ ] Build admin pages for users, categories, project monitoring, and platform overview.
+- [ ] Build admin features for users, categories, project monitoring, and platform overview.
 - [ ] Build and demonstrate project, freelancer, client, and payment reporting screens.
 - [ ] Perform integrated system testing and final bug fixing; add test results and screenshots.
 - [ ] Write the critical evaluation/improvements section and present the admin/reporting features.
@@ -70,18 +71,25 @@ This checklist follows the six-role responsibility plan. **[x] means the reposit
 
 - [x] A common database schema and shared SQL scripts are in the repository.
 - [x] A database design/data dictionary and SQL sample data are present.
-- [ ] Agree and apply the shared CSS rules across the application.
+- [x] Use the shared CSS design system and page scaffolds as the starting point.
+- [ ] Keep module-specific behavior and styling within each member's owned files.
 - [ ] Each member pulls the latest integrated branch, works on the agreed feature branch, and contributes tested changes through review.
 - [ ] Capture genuine screenshots and workflow/test evidence from the running project.
 - [ ] Prepare and deliver the planned team presentation; each member should explain their own verified contribution.
 
-The checked SQL items describe the **current repository contents**, including SQL implemented across the freelancer, client/project, proposal/assignment, payment/review, and admin/dispute areas. They must not be used as proof that a named member personally completed their role. The unchecked items identify the remaining app, runtime verification, evidence, and presentation work.
+The checked items describe the **current repository contents**; they do not prove which teammate authored a feature or delivered its presentation. The shared UI is a foundation, not a completed application. Module workflows, runtime evidence, coursework documentation, and presentation work remain assigned to the team.
+
+## Shared UI foundation
+
+`Shared/styles.css` is a small shared base for the platform palette, text, page width, and basic links. The visual direction uses navy, warm white, butter-gold, and a cyan neural logo inspired by the team reference. It deliberately avoids finished dashboard layouts and feature controls.
+
+`Application/index.html` is a simple portal selector. Freelancer, client, proposal, payment/review, and admin areas have separate paths under `Application/`. Freelancer, client, and admin also have distinct reserved sign-in paths at `/Application/freelancer/login/`, `/Application/client/login/`, and `/Application/admin/login/`. They currently display placeholders only: there are no login forms, authentication, roles, dashboards, or module workflows. See [`Documentation/UIFoundation.md`](./Documentation/UIFoundation.md) for route boundaries and contribution notes.
 
 ## Technology
 
 - **Database:** Microsoft SQL Server, using T-SQL. SQL Server can run on Linux; the scripts use SQL Server syntax such as `IDENTITY`, `GO`, `CREATE OR ALTER`, table-valued parameters, and `THROW`.
 - **Version control:** Git and GitHub.
-- **Application frontend/backend:** not selected or implemented in this repository yet.
+- **Application:** static HTML and shared CSS starter foundation; module behaviors and backend are not implemented.
 - **Compatibility:** SQL Server 2016 SP1 or later is required for `CREATE OR ALTER`. Use a SQL Server instance/container and a client that understands `GO`, such as `sqlcmd` or a SQL Server editor.
 
 ## Database architecture
@@ -183,3 +191,5 @@ The assessment brief also asks the team to follow its permitted AI-use level and
 ## Git workflow
 
 The project uses `main` as the integrated branch and feature branches for team modules. Pull the latest `main`, work in the branch agreed by the team, and integrate through review. Keep the central schema and shared SQL objects coordinated so modules use the same table names and relationships.
+
+For UI work, each member should own their module's HTML and any module-specific stylesheet. Keep shared tokens and shared components in `Shared/styles.css`; coordinate changes there with the team leader to reduce merge conflicts. Submit changes through a pull request targeting `main` when repository rules require review.

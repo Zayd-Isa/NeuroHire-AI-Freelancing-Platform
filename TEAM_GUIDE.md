@@ -11,6 +11,7 @@ This guide records the six-member responsibility plan and shared workflow for th
 - Maintain the public GitHub repository, `main`, and agreed feature-branch naming.
 - Own the central SQL Server schema, table names, keys, relationships, and constraints.
 - Maintain the shared CSS/design rules and application folder structure.
+- Keep the shared design tokens and reusable components centralized in `Shared/styles.css`; review changes there to avoid overlapping edits.
 - Define integration expectations and review feature branches/pull requests.
 - Coordinate integration checks, the database diagram, relational mapping, normalization, data dictionary, and presentation flow.
 
@@ -51,6 +52,20 @@ All six members should:
 - Check their contribution in the integrated application and record genuine screenshots/evidence.
 - Prepare a clear contribution summary and be ready to explain their work in the 15-minute presentation.
 
+## Shared UI foundation
+
+The UI is deliberately a minimal route scaffold rather than a finished application. `Application/index.html` only points to distinct freelancer, client, proposals, payments/reviews, and admin paths. Freelancer, client, and admin each have a separate reserved `login/` path. These login paths are placeholders: they have no forms or authentication. The payment/review page contains no payment form, transaction behavior, gateway, or review workflow.
+
+Use `Shared/styles.css` as the intentionally small base stylesheet. It defines the navy, warm-white, butter-gold, and cyan logo colors plus basic page and link styles. Members can design their assigned module pages independently. The route map and contribution boundaries are in `Documentation/UIFoundation.md`.
+
+Contribution rules:
+
+- Keep common design changes in `Shared/styles.css` and coordinate them with the team leader.
+- Keep feature markup in the assigned module page; do not overwrite another member's page.
+- Put module-only CSS in a stylesheet inside that module's own folder and keep the shared base small.
+- Preserve semantic headings, keyboard focus, and responsive behavior when extending a page.
+- Pull the latest `main` before starting and submit a reviewable pull request to `main` according to repository rules.
+
 ## Database integration order
 
 On a clean SQL Server database, run:
@@ -74,4 +89,4 @@ This project uses Microsoft SQL Server T-SQL. Running the SQL Server engine on L
 
 ## Current repository boundary
 
-The SQL schema, programmable objects, synthetic data, design notes, and this workflow guide are present. The HTML pages and shared CSS remain empty starter files, so the web application, module UI flows, genuine runtime screenshots, and presentation recording still need team implementation. Do not mark those checklist items complete based on database scripts alone.
+The SQL schema, programmable objects, synthetic data, design notes, shared CSS design system, and static HTML scaffolds are present. The module workflows, backend integration, genuine runtime screenshots, and presentation recording still need team implementation. Do not mark those checklist items complete based on the shared scaffold or database scripts alone.
