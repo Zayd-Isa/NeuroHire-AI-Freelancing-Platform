@@ -1,0 +1,10 @@
+node_modules/
+Backend/.env
+Backend/.env.*
+!Backend/.env.example
+Backend/preview-accounts.txt
+test-results/
+playwright-report/
+*.log
+~$*.docx
+.~lock.*

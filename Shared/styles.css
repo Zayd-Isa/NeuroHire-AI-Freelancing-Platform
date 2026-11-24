@@ -1,0 +1,51 @@
+:root {
+  color-scheme: light;
+  --navy: #152840;
+  --blue: #557998;
+  --cyan: #16b7d5;
+  --butter: #e9cc83;
+  --paper: #fffefa;
+  --cream: #fbf8f0;
+  --ink: #18283a;
+  --muted: #6f7b87;
+  --line: #e7e3d9;
+  --page-width: 58rem;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  padding: 2rem 1.25rem;
+  color: var(--ink);
+  background: var(--cream);
+  font: 1rem/1.6 "Inter", "Segoe UI", Arial, sans-serif;
+}
+
+a { color: var(--blue); }
+a:focus-visible { outline: 3px solid var(--butter); outline-offset: 3px; }
+
+.page { width: min(100%, var(--page-width)); margin: 0 auto; }
+.brand { display: inline-flex; align-items: center; gap: .7rem; color: var(--navy); text-decoration: none; }
+.brand img { width: 2.7rem; height: 2.7rem; }
+.brand-name { font-size: 1.05rem; font-weight: 700; }
+.brand-name span { color: var(--blue); font-weight: 500; }
+
+main { padding: 3.25rem 0 2rem; }
+.eyebrow { margin: 0 0 .45rem; color: var(--blue); font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+h1 { max-width: 42rem; margin: 0 0 .8rem; color: var(--navy); font-size: clamp(2rem, 5vw, 3rem); line-height: 1.12; }
+p { max-width: 42rem; margin: .5rem 0 1rem; }
+.muted { color: var(--muted); }
+.portal-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .75rem; margin: 2rem 0; padding: 0; list-style: none; }
+.portal-list a { display: block; padding: .9rem 1rem; border: 1px solid var(--line); border-radius: .45rem; color: var(--navy); background: var(--paper); font-weight: 650; text-decoration: none; }
+.portal-list a:hover { border-color: var(--blue); }
+.coming-soon { margin: 1.4rem 0; padding: 1rem; border-left: 3px solid var(--butter); background: var(--paper); }
+.back-link { display: inline-block; margin-top: 1.2rem; }
+footer { padding-top: 1rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; }
+
+@media (max-width: 36rem) {
+  body { padding: 1.25rem 1rem; }
+  main { padding-top: 2.2rem; }
+}

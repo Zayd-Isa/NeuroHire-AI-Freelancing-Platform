@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#152840" />
+    <title>Payments & reviews · NeuroHire AI</title>
+    <link rel="stylesheet" href="/Shared/styles.css" />
+    <link rel="stylesheet" href="/Application/payments/payments.css" />
+    <script src="/Application/payments/payments.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/Application/"
+        ><img src="/Shared/neurohire-mark.svg" alt="" /><span class="brand-name"
+          >NeuroHire <span>AI</span></span
+        ></a
+      ><span class="preview-label">LOCAL PREVIEW · NO REAL CHARGES</span>
+      <div id="identity" hidden>
+        <span id="person"></span
+        ><button id="logout" class="text-button">Sign out</button>
+      </div>
+    </header>
+    <div
+      id="notice"
+      class="notice"
+      role="status"
+      aria-live="polite"
+      hidden
+    ></div>
+    <main id="login-screen" class="login-layout" hidden>
+      <section class="welcome">
+        <p class="eyebrow">Good work deserves a clear finish.</p>
+        <h1>
+          Every payment.<br />Every detail.<br /><span>In one place.</span>
+        </h1>
+        <p>
+          Keep track of project payments, see the commission breakdown, and
+          share thoughtful feedback on completed work.
+        </p>
+        <div class="welcome-note">
+          <span class="small-mark">↗</span>
+          <div>
+            <strong>Clarity at every step</strong>
+            <p>From a payment request to the final review.</p>
+          </div>
+        </div>
+      </section>
+      <section class="login-card">
+        <p class="eyebrow">Payments & reviews</p>
+        <h2>Welcome back</h2>
+        <p class="muted">Sign in to your workspace.</p>
+        <form id="login-form">
+          <fieldset class="role-picker">
+            <legend>Account type</legend>
+            <label
+              ><input type="radio" name="role" value="Client" checked /><span
+                >Client</span
+              ></label
+            ><label
+              ><input type="radio" name="role" value="Freelancer" /><span
+                >Freelancer</span
+              ></label
+            ><label
+              ><input type="radio" name="role" value="Admin" /><span
+                >Admin</span
+              ></label
+            >
+          </fieldset>
+          <label for="email">Email address</label
+          ><input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="username"
+            required
+            maxlength="100"
+            placeholder="you@example.com"
+          />
+          <label for="password">Password</label
+          ><input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+            maxlength="256"
+            placeholder="Your password"
+          />
+          <button class="primary full" type="submit">
+            Open my workspace <span aria-hidden="true">→</span>
+          </button>
+          <p id="login-error" class="error" role="alert"></p>
+        </form>
+        <p class="fine-print">
+          Use your local preview account. Each role has its own workspace and
+          permissions.
+        </p>
+      </section>
+    </main>
+    <main id="workspace" class="workspace" hidden>
+      <section class="page-heading">
+        <div>
+          <p id="workspace-role" class="eyebrow"></p>
+          <h1>Payments & reviews</h1>
+          <p class="muted">
+            A clear view of your work, payments, and feedback.
+          </p>
+        </div>
+        <div class="heading-actions">
+          <span id="connection" class="connection">● Connected</span
+          ><button id="refresh" class="secondary">Refresh</button>
+        </div>
+      </section>
+      <div class="demo-note">
+        <span aria-hidden="true">◈</span> Demonstration ledger. Changes are
+        saved to the database; no money is charged or transferred.
+      </div>
+      <section class="metrics" aria-label="Payment summary">
+        <article class="metric">
+          <span id="released-label">Released payments</span
+          ><strong id="released-value">—</strong
+          ><small>Current released total</small>
+        </article>
+        <article class="metric">
+          <span>Open payments</span><strong id="open-value">—</strong
+          ><small>Pending, held, and disputed</small>
+        </article>
+        <article class="metric">
+          <span>Platform commission</span
+          ><strong id="commission-value">—</strong
+          ><small>From released payments</small>
+        </article>
+        <article class="metric accent">
+          <span id="rating-label">Your review rating</span
+          ><strong id="rating-value">—</strong
+          ><small id="rating-detail">From completed assignments</small>
+        </article>
+      </section>
+      <nav class="tabs" aria-label="Workspace sections">
+        <button id="payments-tab" class="tab selected" aria-pressed="true">
+          Payments <span id="payment-count">0</span></button
+        ><button id="reviews-tab" class="tab" aria-pressed="false">
+          Reviews <span id="review-count">0</span>
+        </button>
+      </nav>
+      <section id="payments-section" class="section-grid">
+        <div class="panel history-panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Payment history</h2>
+              <p class="muted">Open any payment to see its full story.</p>
+            </div>
+          </div>
+          <div class="filters">
+            <label class="search-label"
+              ><span class="sr-only">Search payments</span
+              ><input
+                id="search"
+                type="search"
+                placeholder="Search project or reference…" /></label
+            ><label
+              ><span class="sr-only">Filter by payment status</span
+              ><select id="status-filter">
+                <option value="">All statuses</option>
+                <option>Pending</option>
+                <option>Held in Escrow</option>
+                <option>Released</option>
+                <option>Refunded</option>
+                <option>Failed</option>
+                <option>Cancelled</option>
+                <option>Disputed</option>
+              </select></label
+            >
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Project & reference</th>
+                  <th>Gross</th>
+                  <th>Freelancer net</th>
+                  <th>Status</th>
+                  <th><span class="sr-only">Details</span></th>
+                </tr>
+              </thead>
+              <tbody id="payment-rows"></tbody>
+            </table>
+          </div>
+          <p id="payments-empty" class="empty" hidden>
+            No payments match your selection.
+          </p>
+          <p class="table-foot">
+            Most recent 250 records · amounts displayed in USD
+          </p>
+        </div>
+        <aside class="panel compose" id="payment-compose">
+          <p class="eyebrow">Keep work moving</p>
+          <h2>Record a payment</h2>
+          <p class="muted">Choose your assignment and review the breakdown.</p>
+          <form id="payment-form">
+            <label for="assignment">Project assignment</label
+            ><select id="assignment" required></select>
+            <p id="remaining" class="field-hint"></p>
+            <label for="milestone">Milestone</label
+            ><select id="milestone">
+              <option value="">Whole assignment</option></select
+            ><label for="amount">Gross amount (USD)</label>
+            <div class="amount-field">
+              <span>$</span
+              ><input
+                id="amount"
+                name="amount"
+                inputmode="decimal"
+                type="text"
+                required
+                pattern="[0-9]+(\.[0-9]{1,2})?"
+                placeholder="0.00"
+                maxlength="11"
+              />
+            </div>
+            <div class="breakdown">
+              <div>
+                <span id="fee-label">Platform fee</span
+                ><strong id="fee-preview">$0.00</strong>
+              </div>
+              <div class="net-row">
+                <span>Freelancer receives</span
+                ><strong id="net-preview">$0.00</strong>
+              </div>
+            </div>
+            <button class="primary full" type="submit">
+              Record payment <span aria-hidden="true">→</span>
+            </button>
+            <p class="fine-print">
+              Creates a pending record. Your commission rate is set by the
+              platform.
+            </p>
+            <p class="error" id="payment-error" role="alert"></p>
+          </form>
+        </aside>
+        <aside class="panel compose" id="payment-guide" hidden>
+          <p class="eyebrow">A shared record</p>
+          <h2>Follow every payment</h2>
+          <p class="muted" id="guide-copy"></p>
+          <ol class="steps">
+            <li>
+              <strong>Pending</strong
+              ><span>The payment request is recorded.</span>
+            </li>
+            <li>
+              <strong>Held in Escrow</strong
+              ><span>The ledger records a held status.</span>
+            </li>
+            <li>
+              <strong>Released</strong
+              ><span>Totals reflect gross, commission, and net.</span>
+            </li>
+          </ol>
+          <p class="fine-print">
+            These are demonstration statuses. Every status change records who
+            made it and why.
+          </p>
+        </aside>
+      </section>
+      <section id="reviews-section" class="section-grid" hidden>
+        <div>
+          <div class="panel-heading">
+            <div>
+              <h2>Project feedback</h2>
+              <p class="muted">Reviews from the people who worked together.</p>
+            </div>
+          </div>
+          <div id="review-list" class="review-list"></div>
+          <p id="reviews-empty" class="empty" hidden>
+            No reviews yet. Completed work is where feedback begins.
+          </p>
+        </div>
+        <aside class="panel compose" id="review-compose">
+          <p class="eyebrow">Close the loop</p>
+          <h2>Share your experience</h2>
+          <form id="review-form">
+            <label for="review-assignment">Completed assignment</label
+            ><select id="review-assignment" required></select>
+            <fieldset class="stars-picker">
+              <legend>Your rating</legend>
+              <label
+                ><input type="radio" name="rating" value="1" required /><span
+                  >1 ★</span
+                ></label
+              ><label
+                ><input type="radio" name="rating" value="2" /><span
+                  >2 ★</span
+                ></label
+              ><label
+                ><input type="radio" name="rating" value="3" /><span
+                  >3 ★</span
+                ></label
+              ><label
+                ><input type="radio" name="rating" value="4" /><span
+                  >4 ★</span
+                ></label
+              ><label
+                ><input type="radio" name="rating" value="5" /><span
+                  >5 ★</span
+                ></label
+              >
+            </fieldset>
+            <label for="review-comment">Your review</label
+            ><textarea
+              id="review-comment"
+              rows="5"
+              required
+              minlength="3"
+              maxlength="2000"
+              placeholder="What went well? What could be better?"
+            ></textarea
+            ><button class="primary full" type="submit">Publish review</button>
+            <p class="fine-print">
+              One review per direction, for completed assignments only.
+            </p>
+            <p id="review-error" class="error" role="alert"></p>
+          </form>
+          <p id="review-unavailable" class="muted" hidden>
+            No completed assignments are waiting for your review.
+          </p>
+        </aside>
+      </section>
+    </main>
+    <dialog id="payment-dialog">
+      <div class="dialog-top">
+        <p class="eyebrow">Payment details</p>
+        <button
+          id="close-dialog"
+          class="text-button"
+          aria-label="Close payment details"
+        >
+          Close ×
+        </button>
+      </div>
+      <h2 id="detail-title"></h2>
+      <p id="detail-ref" class="muted reference"></p>
+      <div id="detail-amounts" class="detail-amounts"></div>
+      <h3>Status timeline</h3>
+      <ol id="timeline" class="timeline"></ol>
+      <form id="status-form" hidden>
+        <h3>Update payment status</h3>
+        <label for="new-status">Next status</label
+        ><select id="new-status" required></select
+        ><label for="status-reason">Reason</label
+        ><textarea
+          id="status-reason"
+          rows="2"
+          minlength="3"
+          maxlength="500"
+          required
+          placeholder="Explain this change for both participants"
+        ></textarea
+        ><button type="submit" class="primary">Save status change</button>
+        <p id="status-error" class="error" role="alert"></p>
+      </form>
+    </dialog>
+    <footer class="payment-footer">
+      <span>NeuroHire AI · Payments & reviews</span
+      ><a href="/Application/">All workspaces ↗</a>
+    </footer>
+  </body>
+</html>
