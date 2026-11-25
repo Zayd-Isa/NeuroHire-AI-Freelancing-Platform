@@ -108,7 +108,8 @@ Screenshots from the running SQL-connected portal are in [`Documentation/Screens
 - [x] Database design, ER model, normalization rationale, and data dictionary documented.
 - [x] Clean install of all database scripts verified on SQL Server 2022.
 - [x] Member 4 payment & review module integrated into `main`.
-- [ ] Add database screenshots and a rendered ER diagram image to the coursework evidence.
+- [ ] Add database screenshots to the coursework evidence.
+- [ ] Add a rendered ER diagram image to the coursework evidence.
 - [ ] Review and merge the remaining members' branches.
 - [ ] Coordinate final integration testing, report, and presentation.
 
