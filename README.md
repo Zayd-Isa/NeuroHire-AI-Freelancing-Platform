@@ -117,7 +117,7 @@ Screenshots from the running SQL-connected portal are in [`Documentation/Screens
 
 - [x] Freelancer, skill, freelancer-skill, and service tables with synthetic records.
 - [x] Freelancer search/reporting SQL (`usp_FindFreelancersBySkill`, freelancer summary and rating objects).
-- [ ] Freelancer registration, profile, skills/services, dashboard, and project-browsing pages.
+- [x] Freelancer registration, profile, skills/services, dashboard, and project-browsing pages.
 - [ ] Connect screens to the database; add test cases, screenshots, and evidence.
 - [ ] Present the freelancer features.
 
